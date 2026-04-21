@@ -3,34 +3,474 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: B2B meat supply API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: products
+    description: Meat product catalog
+  - name: customers
+    description: Wholesale business customers
+  - name: orders
+    description: Customer orders
+  - name: dashboard
+    description: Aggregated dashboard data
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
           content:
             application/json:
+              schema: { $ref: "#/components/schemas/HealthStatus" }
+
+  /products:
+    get:
+      operationId: listProducts
+      tags: [products]
+      summary: List meat products
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema: { type: string }
+        - name: search
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        "200":
+          description: Products
+          content:
+            application/json:
               schema:
-                $ref: "#/components/schemas/HealthStatus"
+                type: array
+                items: { $ref: "#/components/schemas/Product" }
+    post:
+      operationId: createProduct
+      tags: [products]
+      summary: Create a meat product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ProductInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Product" }
+  /products/{id}:
+    get:
+      operationId: getProduct
+      tags: [products]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: Product
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Product" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiError" }
+    patch:
+      operationId: updateProduct
+      tags: [products]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ProductInput" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Product" }
+    delete:
+      operationId: deleteProduct
+      tags: [products]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "204": { description: Deleted }
+
+  /customers:
+    get:
+      operationId: listCustomers
+      tags: [customers]
+      summary: List wholesale customers
+      responses:
+        "200":
+          description: Customers
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Customer" }
+    post:
+      operationId: createCustomer
+      tags: [customers]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CustomerInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Customer" }
+  /customers/{id}:
+    get:
+      operationId: getCustomer
+      tags: [customers]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: Customer
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Customer" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiError" }
+    patch:
+      operationId: updateCustomer
+      tags: [customers]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CustomerInput" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Customer" }
+    delete:
+      operationId: deleteCustomer
+      tags: [customers]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "204": { description: Deleted }
+
+  /orders:
+    get:
+      operationId: listOrders
+      tags: [orders]
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema: { type: string }
+        - name: customerId
+          in: query
+          required: false
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Order" }
+    post:
+      operationId: createOrder
+      tags: [orders]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrderInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Order" }
+  /orders/{id}:
+    get:
+      operationId: getOrder
+      tags: [orders]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: Order
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Order" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiError" }
+    delete:
+      operationId: deleteOrder
+      tags: [orders]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "204": { description: Deleted }
+  /orders/{id}/status:
+    patch:
+      operationId: updateOrderStatus
+      tags: [orders]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrderStatusUpdate" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Order" }
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Aggregated KPIs
+      responses:
+        "200":
+          description: Summary
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DashboardSummary" }
+  /dashboard/recent-orders:
+    get:
+      operationId: getRecentOrders
+      tags: [dashboard]
+      summary: Most recent orders
+      responses:
+        "200":
+          description: Recent orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Order" }
+  /dashboard/top-products:
+    get:
+      operationId: getTopProducts
+      tags: [dashboard]
+      summary: Best-selling products by volume
+      responses:
+        "200":
+          description: Top products
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/TopProduct" }
+  /dashboard/low-stock:
+    get:
+      operationId: getLowStock
+      tags: [dashboard]
+      summary: Products running low on stock
+      responses:
+        "200":
+          description: Low stock products
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Product" }
+  /dashboard/sales-by-category:
+    get:
+      operationId: getSalesByCategory
+      tags: [dashboard]
+      summary: Sales totals grouped by meat category
+      responses:
+        "200":
+          description: Sales by category
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/CategorySales" }
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
+      properties:
+        status: { type: string }
+    OrderStatusUpdate:
+      type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
-
+          enum: [pending, confirmed, shipped, delivered, cancelled]
+    ApiError:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
+    Product:
+      type: object
+      required: [id, name, category, cut, origin, grade, pricePerKgCents, stockKg, unit, imageUrl, description, createdAt]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        category:
+          type: string
+          enum: [beef, pork, chicken, lamb, veal, game]
+        cut: { type: string }
+        origin: { type: string }
+        grade: { type: string }
+        pricePerKgCents: { type: integer }
+        stockKg: { type: number }
+        unit: { type: string }
+        imageUrl: { type: string }
+        description: { type: string }
+        createdAt: { type: string, format: date-time }
+    ProductInput:
+      type: object
+      required: [name, category, cut, origin, grade, pricePerKgCents, stockKg, unit, imageUrl, description]
+      properties:
+        name: { type: string }
+        category:
+          type: string
+          enum: [beef, pork, chicken, lamb, veal, game]
+        cut: { type: string }
+        origin: { type: string }
+        grade: { type: string }
+        pricePerKgCents: { type: integer }
+        stockKg: { type: number }
+        unit: { type: string }
+        imageUrl: { type: string }
+        description: { type: string }
+    Customer:
+      type: object
+      required: [id, businessName, contactName, email, phone, address, city, accountType, creditLimitCents, notes, createdAt]
+      properties:
+        id: { type: integer }
+        businessName: { type: string }
+        contactName: { type: string }
+        email: { type: string }
+        phone: { type: string }
+        address: { type: string }
+        city: { type: string }
+        accountType:
+          type: string
+          enum: [restaurant, butcher, hotel, retailer, distributor]
+        creditLimitCents: { type: integer }
+        notes: { type: string }
+        createdAt: { type: string, format: date-time }
+    CustomerInput:
+      type: object
+      required: [businessName, contactName, email, phone, address, city, accountType, creditLimitCents, notes]
+      properties:
+        businessName: { type: string }
+        contactName: { type: string }
+        email: { type: string }
+        phone: { type: string }
+        address: { type: string }
+        city: { type: string }
+        accountType:
+          type: string
+          enum: [restaurant, butcher, hotel, retailer, distributor]
+        creditLimitCents: { type: integer }
+        notes: { type: string }
+    OrderItem:
+      type: object
+      required: [id, productId, productName, quantityKg, pricePerKgCents, lineTotalCents]
+      properties:
+        id: { type: integer }
+        productId: { type: integer }
+        productName: { type: string }
+        quantityKg: { type: number }
+        pricePerKgCents: { type: integer }
+        lineTotalCents: { type: integer }
+    OrderItemInput:
+      type: object
+      required: [productId, quantityKg]
+      properties:
+        productId: { type: integer }
+        quantityKg: { type: number }
+    Order:
+      type: object
+      required: [id, customerId, customerName, status, deliveryDate, totalCents, notes, items, createdAt]
+      properties:
+        id: { type: integer }
+        customerId: { type: integer }
+        customerName: { type: string }
+        status:
+          type: string
+          enum: [pending, confirmed, shipped, delivered, cancelled]
+        deliveryDate: { type: string, format: date }
+        totalCents: { type: integer }
+        notes: { type: string }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/OrderItem" }
+        createdAt: { type: string, format: date-time }
+    OrderInput:
+      type: object
+      required: [customerId, deliveryDate, notes, items]
+      properties:
+        customerId: { type: integer }
+        deliveryDate: { type: string, format: date }
+        notes: { type: string }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/OrderItemInput" }
+    DashboardSummary:
+      type: object
+      required: [totalRevenueCents, ordersThisMonth, activeCustomers, pendingOrders, totalProducts, lowStockCount, revenueChangePct]
+      properties:
+        totalRevenueCents: { type: integer }
+        ordersThisMonth: { type: integer }
+        activeCustomers: { type: integer }
+        pendingOrders: { type: integer }
+        totalProducts: { type: integer }
+        lowStockCount: { type: integer }
+        revenueChangePct: { type: number }
+    TopProduct:
+      type: object
+      required: [productId, productName, category, totalKg, totalRevenueCents]
+      properties:
+        productId: { type: integer }
+        productName: { type: string }
+        category: { type: string }
+        totalKg: { type: number }
+        totalRevenueCents: { type: integer }
+    CategorySales:
+      type: object
+      required: [category, totalKg, totalRevenueCents, orderCount]
+      properties:
+        category: { type: string }
+        totalKg: { type: number }
+        totalRevenueCents: { type: integer }
+        orderCount: { type: integer }

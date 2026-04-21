@@ -4,6 +4,11 @@
 
 pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
 
+## Apps
+
+- **Meatworks** (`artifacts/meatworks`) — B2B wholesale meat supply platform. React + Vite frontend with sidebar navigation; manages product catalog (beef, pork, chicken, lamb, veal, game), wholesale customer accounts, orders with status workflow (pending → confirmed → shipped → delivered/cancelled), and an analytics dashboard.
+- **API Server** (`artifacts/api-server`) — Express 5 backend serving `/api/*` for products, customers, orders, and dashboard aggregates.
+
 ## Stack
 
 - **Monorepo tool**: pnpm workspaces
